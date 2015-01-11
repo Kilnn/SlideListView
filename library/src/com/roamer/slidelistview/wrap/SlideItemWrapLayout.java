@@ -1,6 +1,7 @@
 package com.roamer.slidelistview.wrap;
 
 import android.content.Context;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +11,8 @@ import com.example.swiplistview.R;
 import com.roamer.slidelistview.SlideListView.SlideAction;
 
 /**
- * wrap the listview item,It may have three directly sub view(front view ,left back view,right back view).<br/>
+ * wrap the listview item,It may have three directly sub view(front view ,left
+ * back view,right back view).<br/>
  * front view must be not null.The other is not necessarily
  * 
  * @author Dean Tao
@@ -24,6 +26,8 @@ public class SlideItemWrapLayout extends RelativeLayout {
 
 	private SlideAction mSlideLeftAction;
 	private SlideAction mSlideRightAction;
+
+	private int mOffset = 0;// Use for sdk_version<=2.3.3
 
 	/**
 	 * 
@@ -39,9 +43,11 @@ public class SlideItemWrapLayout extends RelativeLayout {
 	 * @param frontViewId
 	 *            front view layout id. Must be an effective
 	 * @param leftBackViewId
-	 *            left back view layout id.if leftBackViewId ==0,there is no left back view,and the slideLeftAction will be ignored
+	 *            left back view layout id.if leftBackViewId ==0,there is no
+	 *            left back view,and the slideLeftAction will be ignored
 	 * @param rightBackViewId
-	 *            right back view layout id.if rightBackViewId ==0,there is no right back view,and the slideRightAction will be ignored
+	 *            right back view layout id.if rightBackViewId ==0,there is no
+	 *            right back view,and the slideRightAction will be ignored
 	 */
 	public SlideItemWrapLayout(Context context, SlideAction slideLeftAction, SlideAction slideRightAction, int frontViewId, int leftBackViewId,
 			int rightBackViewId) {
@@ -114,9 +120,12 @@ public class SlideItemWrapLayout extends RelativeLayout {
 		mLeftBackView = leftBackView;
 		/**
 		 * must set INVISIBLE.<br/>
-		 * When the slide item is not opend,The motion event could not be dispatch to left/right back view.<br/>
-		 * So set left/right back view INVISIBLE,then we can response the OnItemClickListener.<br/>
-		 * (Should not be GONE,because if it is GONE,the measure width and height will be 0)
+		 * When the slide item is not opend,The motion event could not be
+		 * dispatch to left/right back view.<br/>
+		 * So set left/right back view INVISIBLE,then we can response the
+		 * OnItemClickListener.<br/>
+		 * (Should not be GONE,because if it is GONE,the measure width and
+		 * height will be 0)
 		 */
 		setLeftBackViewShow(false);
 	}
@@ -145,9 +154,12 @@ public class SlideItemWrapLayout extends RelativeLayout {
 		mRightBackView = rightBackView;
 		/**
 		 * must set INVISIBLE.<br/>
-		 * When the slide item is not opend,The motion event could not be dispatch to left/right back view.<br/>
-		 * So set left/right back view INVISIBLE,then we can response the OnItemClickListener.<br/>
-		 * (Should not be GONE,because if it is GONE,the measure width and height will be 0)
+		 * When the slide item is not opend,The motion event could not be
+		 * dispatch to left/right back view.<br/>
+		 * So set left/right back view INVISIBLE,then we can response the
+		 * OnItemClickListener.<br/>
+		 * (Should not be GONE,because if it is GONE,the measure width and
+		 * height will be 0)
 		 */
 		setRightBackViewShow(false);
 	}
@@ -157,7 +169,7 @@ public class SlideItemWrapLayout extends RelativeLayout {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 		int parentWidthSpec = MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.EXACTLY);
 		int parentHeightSpec = MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY);
-		if (mLeftBackView != null ) {
+		if (mLeftBackView != null) {
 			LayoutParams params = (LayoutParams) mLeftBackView.getLayoutParams();
 			int widthSpec = ViewGroup.getChildMeasureSpec(parentWidthSpec, getPaddingLeft() + getPaddingRight() + params.leftMargin
 					+ params.rightMargin, params.width);
@@ -165,7 +177,7 @@ public class SlideItemWrapLayout extends RelativeLayout {
 					+ params.bottomMargin, params.height);
 			mLeftBackView.measure(widthSpec, heightSpec);
 		}
-		if (mRightBackView != null ) {
+		if (mRightBackView != null) {
 			LayoutParams params = (LayoutParams) mRightBackView.getLayoutParams();
 			int widthSpec = ViewGroup.getChildMeasureSpec(parentWidthSpec, getPaddingLeft() + getPaddingRight() + params.leftMargin
 					+ params.rightMargin, params.width);
@@ -178,18 +190,19 @@ public class SlideItemWrapLayout extends RelativeLayout {
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 		super.onLayout(changed, l, t, r, b);
+		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
+			mFrontView.layout(mFrontView.getLeft() + mOffset, mFrontView.getTop(), mFrontView.getRight() + mOffset, mFrontView.getBottom());
+		}
 		if (mLeftBackView != null) {
 			// Always let backView in center of the item
 			int top = (b - t - mLeftBackView.getMeasuredHeight()) / 2;
 			if (mSlideLeftAction == SlideAction.SCROLL) {
-				mLeftBackView.layout(mFrontView.getLeft() - mLeftBackView.getMeasuredWidth(), top, mLeftBackView.getRight(),
+				mLeftBackView.layout(mFrontView.getLeft() - mLeftBackView.getMeasuredWidth(), top, mFrontView.getLeft(),
 						top + mLeftBackView.getMeasuredHeight());
 			} else {
 				mLeftBackView.layout(mLeftBackView.getLeft(), top, mLeftBackView.getRight(), top + mLeftBackView.getMeasuredHeight());
 			}
-
 		}
-
 		if (mRightBackView != null) {
 			// Always let backView in center of the item
 			int top = (b - t - mRightBackView.getMeasuredHeight()) / 2;
@@ -199,7 +212,6 @@ public class SlideItemWrapLayout extends RelativeLayout {
 			} else {
 				mRightBackView.layout(mRightBackView.getLeft(), top, mRightBackView.getRight(), top + mRightBackView.getMeasuredHeight());
 			}
-
 		}
 	}
 
@@ -251,6 +263,14 @@ public class SlideItemWrapLayout extends RelativeLayout {
 				view.setVisibility(View.INVISIBLE);
 			}
 		}
+	}
+
+	public void setOffset(int offset) {
+		if (mOffset == offset) {
+			return;
+		}
+		mOffset = offset;
+		requestLayout();
 	}
 
 }

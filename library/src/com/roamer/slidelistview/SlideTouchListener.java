@@ -152,6 +152,9 @@ public class SlideTouchListener implements OnTouchListener {
 
 		private int preDelatX;
 
+		private int gingerbread_mr1_Offset;// Use fro sdk_version<=2.3.3.Else
+											// always be 0
+
 		public SlideItem(int pos) {
 			position = pos;
 			child = (SlideItemWrapLayout) mSlideListView.getChildAt(position - mSlideListView.getFirstVisiblePosition());
@@ -431,6 +434,20 @@ public class SlideTouchListener implements OnTouchListener {
 				boolean left = mSlideItem.offset > 0 && mSlideItem.offset <= mSlideItem.maxOffset;
 				mSlideListView.onOpend(mSlideItem.position, left);
 			}
+
+			// sdk_version<=2.3.3
+			if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
+				mSlideItem.frontView.setAnimation(null);
+				if (mSlideItem.leftBackView != null) {
+					mSlideItem.leftBackView.setAnimation(null);
+				}
+				if (mSlideItem.rightBackView != null) {
+					mSlideItem.rightBackView.setAnimation(null);
+				}
+				mSlideItem.child.setOffset(mSlideItem.offset);
+				mSlideItem.gingerbread_mr1_Offset = mSlideItem.offset;
+			}
+
 		}
 
 		if (mSlideItem.offset != 0) {
@@ -496,14 +513,14 @@ public class SlideTouchListener implements OnTouchListener {
 	}
 
 	private void move(int offset) {
-		setTranslationX(mSlideItem.frontView, offset);
+		setTranslationX(mSlideItem.frontView,  offset - mSlideItem.gingerbread_mr1_Offset);
 		if (offset < 0) {// offset less than 0,right back view is showing and
 							// left dismiss
 			if (mSlideItem.rightBackView != null) {
 				mSlideItem.child.setRightBackViewShow(true);
 				SlideAction rightAction = mSlideListView.getSlideRightAction();
 				if (rightAction == SlideAction.SCROLL) {
-					setTranslationX(mSlideItem.rightBackView, offset);
+					setTranslationX(mSlideItem.rightBackView,  offset - mSlideItem.gingerbread_mr1_Offset);
 				}
 			}
 			if (mSlideItem.leftBackView != null) {
@@ -515,7 +532,7 @@ public class SlideTouchListener implements OnTouchListener {
 				mSlideItem.child.setLeftBackViewShow(true);
 				SlideAction leftAction = mSlideListView.getSlideLeftAction();
 				if (leftAction == SlideAction.SCROLL) {
-					setTranslationX(mSlideItem.leftBackView, offset);
+					setTranslationX(mSlideItem.leftBackView,  offset - mSlideItem.gingerbread_mr1_Offset);
 				}
 			}
 			if (mSlideItem.rightBackView != null) {
