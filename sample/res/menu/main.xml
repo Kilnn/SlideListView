@@ -1,0 +1,31 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.slidelistviewsample.MainActivity" >
+
+    <item
+        android:id="@+id/menu_slide_mode"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="切换SlideMode(BOTH)"/>
+    <item
+        android:id="@+id/menu_slide_left_action"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="切换SlideLeftAction(Scroll)"/>
+    <item
+        android:id="@+id/menu_slide_right_action"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="切换SlideRightAction(Scroll)"/>
+    <item
+        android:id="@+id/menu_data_change"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="改变Data"/>
+    <item
+        android:id="@+id/menu_adapter_change"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="改变Adapter"/>
+
+</menu>
