@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.database.DataSetObserver;
+import android.os.Build;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -243,37 +244,59 @@ public class SlideListView extends ListView {
 		this.mAnimationTime = animationTime;
 	}
 
+	private class InnerDataSetObserver extends DataSetObserver {
+		@Override
+		public void onChanged() {
+			super.onChanged();
+			closeDirect();
+		}
+
+		@Override
+		public void onInvalidated() {
+			super.onInvalidated();
+			closeDirect();
+		}
+	}
+
+	private void closeDirect() {
+		if (DEUBG) {
+			Log.e(TAG, "Adapter data has changed");
+		}
+		if (mTouchListener.isOpend()) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+				postDelayed(new Runnable() {
+					@Override
+					public void run() {
+						mTouchListener.closeOpenedItem();
+					}
+				}, 100);
+			} else {
+				mTouchListener.closeOpenedItem();
+			}
+		} else {
+			mTouchListener.reset();
+		}
+	}
+
+	private InnerDataSetObserver mInnerDataSetObserver;
+
 	@Override
 	public void setAdapter(ListAdapter adapter) {
+		if (mAdapter != null && mInnerDataSetObserver != null) {
+			mAdapter.unregisterDataSetObserver(mInnerDataSetObserver);
+		}
 		mAdapter = null;
+		mInnerDataSetObserver = null;
 		if (adapter != null && adapter instanceof SlideBaseAdapter) {
 			mAdapter = (SlideBaseAdapter) adapter;
 			mAdapter.setSlideMode(mSlideMode);
 			mAdapter.setSlideLeftAction(mSlideLeftAction);
 			mAdapter.setSlideRightAction(mSlideRightAction);
+			mInnerDataSetObserver = new InnerDataSetObserver();
+			mAdapter.registerDataSetObserver(mInnerDataSetObserver);
 		}
 		super.setAdapter(adapter);
-		if (mTouchListener.isOpend()) {
-			mTouchListener.closeOpenedItem();
-		}else{
-			mTouchListener.reset();
-		}
-		if (adapter != null) {
-			adapter.registerDataSetObserver(new DataSetObserver() {
-				@Override
-				public void onChanged() {
-					super.onChanged();
-					if (DEUBG) {
-						Log.e(TAG, "Adapter data has changed");
-					}
-					if (mTouchListener.isOpend()) {
-						mTouchListener.closeOpenedItem();
-					}else{
-						mTouchListener.reset();
-					}
-				}
-			});
-		}
+		closeDirect();
 	}
 
 	public boolean dispatchTouchEvent(MotionEvent ev) {
